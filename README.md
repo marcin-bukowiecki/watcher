@@ -4,6 +4,8 @@ Watcher is an JVM agent which instruments the bytecode so all instructions manip
 You can set "virtual" breakpoints which won't stop the program execution but will dump the whole thread stack to an `json` file.
 This file will contain events from the thread execution flow.
 
+Be aware that this project is in its early stage of development.
+
 ### Requirements
 
 - `Maven` (minimum `3.8.1`)
@@ -11,7 +13,7 @@ This file will contain events from the thread execution flow.
 
 ### Building
 
-To build the project just execute the following command:
+To build the project just execute following command:
 
 ```
 mvn package
@@ -25,7 +27,7 @@ To test the agent you will need to build the `sandbox` project. The `sandbox` pr
 
 From the `sandbox` root directory execute following command: `mvn clean install`.
 
-After that `cd` to the `target` directory, copy the `watcher-1.0.1.jar` from previous build and execute the following command:
+After that `cd` to the `target` directory, copy the `watcher-1.0.1.jar` from previous build and execute following command:
 
 ```
 java -jar -javaagent:watcher-1.0.1.jar -Dwatcher.logger.enabled=true -Dwatcher.asm.print=true -Dwatcher.main.package=sandbox watcher-sandbox-1.0.0.jar 
@@ -49,6 +51,7 @@ postman collection: `Watcher API.postman_collection.json`. You can import this c
 Sample request flow:
 
 1. `GET Watcher check` - checks if `Watcher Agent` is running.
+
 2. `POST Start debug session` - starts the debug session.
 
 Request body (JSON):
@@ -80,7 +83,10 @@ Request body (JSON):
 
 4. `GET Sandbox request` - sends a request to the sandbox Spring Boot application.
 
-5. `DELETE Remove breakpoint` - removes virtual breakpoints.
+After executing this request you should see a generated `json` file in the same directory where you started the Spring Boot sandbox application.
+
+
+5. `DELETE Remove breakpoint` - removes virtual breakpoint.
 
 Request body (JSON):
 
@@ -90,6 +96,7 @@ Request body (JSON):
     "lineNumber": 23
 }
 ```
+
 
 7. `POST Stop debug session` - stops debug session (removes all breakpoints and bytecode instrumentation).
 
