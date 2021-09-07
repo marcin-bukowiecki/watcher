@@ -47,7 +47,7 @@ public class WatcherAgent {
      */
     public static void premain(String agentArgs, Instrumentation inst) {
         try {
-            System.out.println("Program running with Watcher Agent version 0.0.1");
+            System.out.println("Program running with Watcher Agent version 1.0.1");
             var instance = WatcherContext.init(inst, new WatcherContextProvider());
             System.out.println("Using " + instance.getSecurityProvider().info() + " security provider");
             WatcherApi.init(instance);

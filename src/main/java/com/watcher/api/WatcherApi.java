@@ -14,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Http and Web Socket Watcher API
@@ -44,16 +45,24 @@ public class WatcherApi {
                 return;
             }
 
+            HttpServerResponse response = routingContext.response();
+
             JsonObject bodyAsJson = routingContext.getBodyAsJson();
             var request = bodyAsJson.mapTo(DebugRequest.class);
+            if (StringUtils.isEmpty(request.getBasePackages())) {
+                response.write("basePackages is required");
+                response.setStatusCode(400);
+                response.end();
+                return;
+            }
             var debugSessionMessage = new DebugSessionMessage(request.getDebugSessionStatus(), request.getBasePackages());
             watcherContext.getVertx().eventBus().publish("debug.session", debugSessionMessage);
-            HttpServerResponse response = routingContext.response();
+
             response.setStatusCode(200);
             response.end();
         });
 
-        router.post("/breakpoint").consumes("application/json").handler(routingContext -> {
+        router.post("/watcher/breakpoint").consumes("application/json").handler(routingContext -> {
             if (!watcherContext.getSecurityProvider().authorize(routingContext.request())) {
                 log.info("Unauthorized connection from: {}", routingContext.request().remoteAddress());
                 routingContext.response().setStatusCode(403).end();
@@ -81,7 +90,7 @@ public class WatcherApi {
             response.end();
         });
 
-        router.delete("/breakpoint").consumes("application/json").handler(routingContext -> {
+        router.delete("/watcher/breakpoint").consumes("application/json").handler(routingContext -> {
             if (!watcherContext.getSecurityProvider().authorize(routingContext.request())) {
                 log.info("Unauthorized connection from: {}", routingContext.request().remoteAddress());
                 routingContext.response().setStatusCode(403).end();
@@ -102,25 +111,6 @@ public class WatcherApi {
 
             HttpServerResponse response = routingContext.response();
             response.setStatusCode(202);
-            response.end();
-        });
-
-        router.delete("/breakpoint").handler(routingContext -> {
-            if (!watcherContext.getSecurityProvider().authorize(routingContext.request())) {
-                log.info("Unauthorized connection from: {}", routingContext.request().remoteAddress());
-                routingContext.response().setStatusCode(403).end();
-                return;
-            }
-
-            JsonObject bodyAsJson = routingContext.getBodyAsJson();
-            RemoveBreakpointRequest removeBreakpointRequest = bodyAsJson.mapTo(RemoveBreakpointRequest.class);
-            watcherContext.getWatcherSession().removeBreakpoint(Breakpoint.builder()
-                    .classCanonicalName(removeBreakpointRequest.getClassCanonicalName())
-                    .line(removeBreakpointRequest.getLineNumber())
-                    .build());
-
-            HttpServerResponse response = routingContext.response();
-            response.setStatusCode(200);
             response.end();
         });
 

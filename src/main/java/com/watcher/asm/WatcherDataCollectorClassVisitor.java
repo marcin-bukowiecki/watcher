@@ -2,6 +2,7 @@ package com.watcher.asm;
 
 import com.watcher.model.TransformationContext;
 import com.watcher.utils.Node;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
@@ -24,6 +25,11 @@ public class WatcherDataCollectorClassVisitor extends ClassVisitor {
         super(api, classVisitor);
         this.watcherClassInformationVisitor = watcherClassInformationVisitor;
         this.transformationContext = transformationContext;
+    }
+
+    @Override
+    public void visitAttribute(Attribute attribute) {
+        super.visitAttribute(attribute);
     }
 
     @Override

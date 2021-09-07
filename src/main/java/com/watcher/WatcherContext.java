@@ -1,5 +1,7 @@
 package com.watcher;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.watcher.breakpoint.BreakpointFeature;
 import com.watcher.data.CollectingDataFeature;
 import com.watcher.events.BaseEvent;
@@ -16,17 +18,18 @@ import com.watcher.security.DefaultSecurityProvider;
 import com.watcher.security.KnownHostsSecurityProvider;
 import com.watcher.security.SecurityProvider;
 import com.watcher.service.FeaturesPipeline;
+import com.watcher.utils.ClassUtils;
 import io.vertx.core.Vertx;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.Opcodes;
 
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.lang.instrument.UnmodifiableClassException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -72,6 +75,10 @@ public class WatcherContext {
 
     private final Set<String> knownHosts;
 
+    private final boolean saveToFile;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Getter
     private final DebugSessionHandler debugSessionHandler = new DebugSessionHandler(this);
 
@@ -89,7 +96,13 @@ public class WatcherContext {
         instance = this;
         this.logEnabled = Boolean.getBoolean("watcher.logger.enabled");
         this.printASM = Boolean.getBoolean("watcher.asm.print");
+        this.saveToFile = Boolean.parseBoolean(System.getProperty("watcher.save.to.file", "true"));
         this.mainPackage = System.getProperty("watcher.main.package", "").replace('/','.');
+        if (mainPackage.isEmpty()) {
+            System.err.println("watcher.main.package is empty");
+        } else {
+            System.err.println("watcher.main.package is " + this.mainPackage);
+        }
         final String prop = System.getProperty("watcher.security.known.hosts", "");
         if (StringUtils.isEmpty(prop)) {
             this.knownHosts = Collections.emptySet();
@@ -222,6 +235,16 @@ public class WatcherContext {
             System.out.println(datum);
         }
         getVertx().eventBus().publish("debug.data", breakpointData);
+        if (saveToFile) {
+            var fileName = UUID.randomUUID() + ".json";
+            final Path file;
+            try {
+                file = Files.createFile(Path.of("./" + fileName));
+                objectMapper.writeValue(file.toFile(), breakpointData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public SecurityProvider getSecurityProvider() {
@@ -229,6 +252,48 @@ public class WatcherContext {
             return new DefaultSecurityProvider();
         } else {
             return new KnownHostsSecurityProvider(this.knownHosts);
+        }
+    }
+
+    /**
+     * Removes all transformations from given class
+     */
+    public void flush(String classCanonicalName) {
+        Instrumentation instrumentation = getInstrumentation();
+        Class<?>[] allLoadedClasses = instrumentation.getAllLoadedClasses();
+        for (Class<?> aClass : allLoadedClasses) {
+            ClassUtils.getClassCanonicalName(aClass).ifPresent(name -> {
+                if (name.equals(classCanonicalName)) {
+                    try {
+                        instrumentation.retransformClasses(aClass);
+                    } catch (UnmodifiableClassException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
+
+
+    /**
+     * Removes all transformations from all classes
+     */
+    @VisibleForTesting
+    public void flushAll() {
+        loadedClasses.values().forEach(LoadedClassContext::removeBreakpoints);
+
+        Instrumentation instrumentation = getInstrumentation();
+        Class<?>[] allLoadedClasses = instrumentation.getAllLoadedClasses();
+        for (Class<?> aClass : allLoadedClasses) {
+            ClassUtils.getClassCanonicalName(aClass).ifPresent(name -> {
+                if (loadedClasses.containsKey(name)) {
+                    try {
+                        instrumentation.retransformClasses(aClass);
+                    } catch (UnmodifiableClassException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
         }
     }
 }

@@ -6,40 +6,36 @@
 
     <groupId>watcher</groupId>
     <artifactId>watcher</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <vertx.version>3.9.1</vertx.version>
-        <lombok.version>1.18.12</lombok.version>
-        <lombok.version.maven>1.18.12.0</lombok.version.maven>
-        <assertj.version>3.16.1</assertj.version>
-        <asm.version>7.1</asm.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
+            <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok-maven</artifactId>
-            <version>${lombok.version.maven}</version>
+            <version>1.18.12.0</version>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>${asm.version}</version>
+            <version>7.1</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-util</artifactId>
-            <version>${asm.version}</version>
+            <version>7.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

@@ -1,5 +1,8 @@
 package com.watcher.events;
 
+/**
+ * @author Marcin Bukowiecki
+ */
 public enum EventType {
 
     Unknown,
@@ -24,5 +27,7 @@ public enum EventType {
 
     LoopStart,
 
-    IterationEnd, breakpointReached,
+    IterationEnd,
+
+    breakpointReached,
 }

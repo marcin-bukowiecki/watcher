@@ -41,11 +41,6 @@ public final class ThreadLocalCollector {
     }
 
     public String getCurrentPlace() {
-        /*
-        CollectingContext collectingContext = THREAD_LOCAL.get();
-        assert collectingContext != null : "collectingContext must be initialized";
-        return collectingContext.getCurrentPlace();
-         */
         return stackWalker
                 .walk(ss -> ss.filter(s -> !s.getClassName().startsWith("com.watcher")).findFirst()
                 .map(StackWalker.StackFrame::getClassName)
@@ -103,7 +98,15 @@ public final class ThreadLocalCollector {
             var now = Instant.now();
             final List<BaseEvent> events = collectingContext.chopEvents();
             collectingContext.addEvent(new BreakpointReachedMarker(classCanonicalName, line));
-            final BreakpointData breakpointData = new BreakpointData(threadName, classCanonicalName, line, events, UUID.randomUUID().toString(), now.getEpochSecond(), now.getNano());
+            final BreakpointData breakpointData = new BreakpointData(
+                    threadName,
+                    classCanonicalName,
+                    line,
+                    events,
+                    UUID.randomUUID().toString(),
+                    now.getEpochSecond(),
+                    now.getNano()
+            );
             WatcherContext.getInstance().publishBreakpointData(breakpointData);
         }
     }

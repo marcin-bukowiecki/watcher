@@ -3,10 +3,7 @@ package com.watcher;
 import com.watcher.model.Breakpoint;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,21 +14,25 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public final class LoadedClassContext {
 
-    private ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
-    private int classId;
+    private final int classId;
 
-    private String canonicalClassName;
+    private final String canonicalClassName;
+
+    private final AtomicInteger transformationCounter = new AtomicInteger(0);
+
+    private volatile Set<Breakpoint> breakpoints = new HashSet<>();
 
     private byte[] actualBytecode;
-
-    private Set<Breakpoint> breakpoints = new HashSet<>();
-
-    private volatile AtomicInteger transformationCounter = new AtomicInteger(0);
 
     public LoadedClassContext(int classId, String canonicalClassName) {
         this.classId = classId;
         this.canonicalClassName = canonicalClassName;
+    }
+
+    public void removeBreakpoints() {
+        breakpoints = new HashSet<>();
     }
 
     public int version() {

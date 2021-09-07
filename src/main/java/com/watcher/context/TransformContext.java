@@ -21,6 +21,16 @@ public class TransformContext {
     //Package format is: com/acme, com/acme/foo etc.
     private volatile Set<String> supportedPackages = new HashSet<>();
 
+    public TransformContext() {
+        log.info("Created transform context");
+        if (!supportedPackages.isEmpty()) {
+            log.info("Got supported packages:");
+            for (String supportedPackage : supportedPackages) {
+                log.info(supportedPackage);
+            }
+        }
+    }
+
     /**
      * This method sets the supported packages collection. If a class belongs to a supported package it will be transformed.
      *

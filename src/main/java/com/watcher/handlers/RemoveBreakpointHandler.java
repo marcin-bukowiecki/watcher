@@ -4,13 +4,10 @@ import com.watcher.LoadedClassContext;
 import com.watcher.WatcherContext;
 import com.watcher.messages.RemoveBreakpointMessage;
 import com.watcher.model.Breakpoint;
-import com.watcher.utils.ClassUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -21,7 +18,7 @@ public class RemoveBreakpointHandler implements Handler<Message<RemoveBreakpoint
 
     private final WatcherContext watcherContext;
 
-    private CompletableFuture<Void> completed = CompletableFuture.runAsync(() -> {});
+    private final CompletableFuture<Void> completed = CompletableFuture.runAsync(() -> {});
 
     private CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {});
 
@@ -53,20 +50,6 @@ public class RemoveBreakpointHandler implements Handler<Message<RemoveBreakpoint
             return completed;
         }
 
-        return (task = CompletableFuture.runAsync(() -> {
-            Instrumentation instrumentation = watcherContext.getInstrumentation();
-            Class<?>[] allLoadedClasses = instrumentation.getAllLoadedClasses();
-            for (Class<?> aClass : allLoadedClasses) {
-                ClassUtils.getClassCanonicalName(aClass).ifPresent(name -> {
-                    if (name.equals(classCanonicalName)) {
-                        try {
-                            instrumentation.retransformClasses(aClass);
-                        } catch (UnmodifiableClassException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        }));
+        return (task = CompletableFuture.runAsync(() -> watcherContext.flush(classCanonicalName)));
     }
 }

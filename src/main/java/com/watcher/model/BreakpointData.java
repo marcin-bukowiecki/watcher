@@ -1,16 +1,17 @@
 package com.watcher.model;
 
 import com.watcher.events.BaseEvent;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
+/**
+ * @author Marcin Bukowiecki
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@ToString
 public class BreakpointData {
 
     private String threadName;

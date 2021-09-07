@@ -1,8 +1,9 @@
 package com.watcher.events;
 
-import com.watcher.AbstractTestCase;
+import com.watcher.AbstractIntegrationTest;
 import com.watcher.service.ThreadLocalCollector;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import sandbox.events.Main1;
 import sandbox.events.TestLoop1;
@@ -13,7 +14,8 @@ import java.util.List;
 /**
  * @author Marcin Bukowiecki
  */
-public class EventCollectingTest extends AbstractTestCase {
+@Ignore
+public class EventCollectingTest extends AbstractIntegrationTest {
 
     @Test
     public void collectEvents_1() {
