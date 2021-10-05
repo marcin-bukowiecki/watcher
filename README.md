@@ -21,8 +21,6 @@ mvn package
 
 This will produce a jar in `target` directory (watcher-1.0.1.jar) which is just a typical JVM agent.
 
-### Building
-
 To test the agent you will need to build the `sandbox` project. The `sandbox` project is a simple Spring Boot application.
 
 From the `sandbox` root directory execute following command: `mvn clean install`.
